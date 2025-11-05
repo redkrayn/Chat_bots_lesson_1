@@ -11,7 +11,9 @@ pip install -r requirements.txt
 ```
 Задайте переменные окружения:
 `TELEGRAM_BOT_TOKEN` - Для начала создайте бота в [телеграме](https://telegram.me/BotFather), после вам выдадут токен.
+
 `TELEGRAM_CHAT_ID` - Укажите ваш чат айди, узнать его можно написав боту [@userinfobot](https://telegram.me/userinfobot).
+
 `DEVMAN_TOKEN` - Девман токен можно получить [здесь](https://dvmn.org/api/docs/).
 
 Запустите скрипт:
