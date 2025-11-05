@@ -60,9 +60,7 @@ async def check_update_lesson():
 
 
 async def main():
-    await asyncio.gather(
-        check_update_lesson()
-    )
+    await check_update_lesson()
 
 
 if __name__ == "__main__":
