@@ -1,6 +1,5 @@
 import requests
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters import Command
+from aiogram import Bot, Dispatcher
 import asyncio
 
 from environs import Env
@@ -14,11 +13,6 @@ TELEGRAM_CHAT_ID = env('TELEGRAM_CHAT_ID')
 
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
 dp = Dispatcher()
-
-
-@dp.message(Command("start"))
-async def start_command(message: types.Message):
-    await message.answer("Здарова")
 
 
 async def send_self_message(text: str):
@@ -67,7 +61,6 @@ async def check_update_lesson():
 
 async def main():
     await asyncio.gather(
-        dp.start_polling(bot),
         check_update_lesson()
     )
 
