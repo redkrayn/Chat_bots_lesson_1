@@ -1,15 +1,39 @@
-import requests
-import asyncio
 import time
+import logging
+import requests
+
 from environs import Env
 from telegram import Bot
 
 
-def send_self_message(bot, chat_id, text: str):
-    asyncio.run(bot.send_message(chat_id=chat_id, text=text))
+class TelegramLogsHandler(logging.Handler):
+    def __init__(self, tg_bot, chat_id):
+        super().__init__()
+        self.chat_id = chat_id
+        self.tg_bot = tg_bot
+
+    def emit(self, record):
+        log_entry = self.format(record)
+        self.tg_bot.send_message(chat_id=self.chat_id, text=log_entry)
 
 
-def check_update_lesson(bot, chat_id, devman_token):
+def setup_logging(tg_bot=None, chat_id=None):
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
+    formatter = logging.Formatter(
+        '%(message)s'
+    )
+
+    tg_handler = TelegramLogsHandler(tg_bot, chat_id)
+    tg_handler.setLevel(logging.INFO)
+    tg_handler.setFormatter(formatter)
+    logger.addHandler(tg_handler)
+
+    return logger
+
+
+def check_update_lesson(bot, chat_id, devman_token, logger):
     url = 'https://dvmn.org/api/long_polling/'
     headers = {
         'Authorization': f'Token {devman_token}'
@@ -32,7 +56,7 @@ def check_update_lesson(bot, chat_id, devman_token):
                 timestamp = devman_response.get('last_attempt_timestamp', timestamp)
 
                 if devman_response['new_attempts'][0].get('is_negative'):
-                    send_self_message(
+                    bot.send_message(
                         bot,
                         chat_id,
                         'У вас проверили работу "Отправляем уведомления о проверке работ"\n'
@@ -40,7 +64,7 @@ def check_update_lesson(bot, chat_id, devman_token):
                         f'Ссылка на урок: {devman_response["new_attempts"][0].get("lesson_url")}'
                     )
                 else:
-                    send_self_message(
+                    bot.send_message(
                         bot,
                         chat_id,
                         'У вас проверили работу "Отправляем уведомления о проверке работ"\n'
@@ -50,8 +74,12 @@ def check_update_lesson(bot, chat_id, devman_token):
         except requests.exceptions.ReadTimeout:
             continue
         except requests.exceptions.ConnectionError:
-            print('Проблемы с интернетом, пробуем переподключиться...')
+            logger.warning('Проблемы с интернетом, переподключение...')
             time.sleep(5)
+            continue
+        except Exception as e:
+            logger.error(f"Бот упал с ошибкой: {e}", exc_info=True)
+            time.sleep(30)
             continue
 
 
@@ -64,7 +92,10 @@ def main():
     devman_token = env('DEVMAN_TOKEN')
 
     bot = Bot(token=telegram_bot_token)
-    check_update_lesson(bot, telegram_chat_id, devman_token)
+    logger = setup_logging(bot, telegram_chat_id)
+
+    logger.info('Бот запущен')
+    check_update_lesson(bot, telegram_chat_id, devman_token, logger)
 
 
 if __name__ == "__main__":
