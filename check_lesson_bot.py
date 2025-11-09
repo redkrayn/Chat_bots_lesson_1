@@ -57,18 +57,16 @@ def check_update_lesson(bot, chat_id, devman_token, logger):
 
                 if devman_response['new_attempts'][0].get('is_negative'):
                     bot.send_message(
-                        bot,
-                        chat_id,
-                        'У вас проверили работу "Отправляем уведомления о проверке работ"\n'
-                        'К сожалению, в работе нашлись ошибки.\n'
-                        f'Ссылка на урок: {devman_response["new_attempts"][0].get("lesson_url")}'
+                        chat_id=chat_id,
+                        text='У вас проверили работу "Отправляем уведомления о проверке работ"\n'
+                             'К сожалению, в работе нашлись ошибки.\n'
+                             f'Ссылка на урок: {devman_response["new_attempts"][0].get("lesson_url")}'
                     )
                 else:
                     bot.send_message(
-                        bot,
-                        chat_id,
-                        'У вас проверили работу "Отправляем уведомления о проверке работ"\n'
-                        'Преподавателю всё понравилось, можно приступать к следующему уроку!'
+                        chat_id=chat_id,
+                        text='У вас проверили работу "Отправляем уведомления о проверке работ"\n'
+                             'Преподавателю всё понравилось, можно приступать к следующему уроку!'
                     )
 
         except requests.exceptions.ReadTimeout:
